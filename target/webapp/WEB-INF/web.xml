@@ -15,9 +15,12 @@
     	<!-- param-value>/home/virtuser/uploads/</param-value-->
 </context-param>  
 <context-param>
-    	<param-name>COMPANY_ENDPOINT</param-name>
-    	<param-value>/tmp/</param-value>
-    	<!-- param-value>/home/virtuser/uploads/</param-value-->
+    	<param-name>REST_ENDPOINT</param-name>
+    	<!--
+    	<param-value>http://connector.cloudapps-613e.oslab.opentlc.com/document/</param-value>
+    	<param-value>http://192.168.223.198:9000/document/</param-value> 
+    	-->
+    	<param-value>http://192.168.223.198:9000/document/</param-value>
 </context-param>  
   <listener>
     <listener-class>

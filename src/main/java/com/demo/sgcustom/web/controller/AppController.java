@@ -9,13 +9,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
@@ -37,13 +41,79 @@ public class AppController extends MultiActionController {
                 return mv;
         }
         @ResponseBody
+        public String addDocument(HttpServletRequest request, HttpServletResponse response) {
+        	response.setContentType("APPLICATION/JSON");
+			PrintWriter out=null;
+			String fileUrl=request.getParameter("inputFile");
+			String documentName=request.getParameter("documentName");
+			String documentType=request.getParameter("documentType");
+			System.out.println("========================== "+fileUrl+"==============="+documentName+"==========="+documentType);
+			HttpClient httpClient = HttpClientBuilder.create().build();
+			//http://connector.cloudapps-613e.oslab.opentlc.com/
+			String endpoint=request.getServletContext().getInitParameter("REST_ENDPOINT");
+			HttpPost postRequest=new HttpPost(endpoint+"add");
+			BufferedReader br=null;
+			try {
+				StringEntity input =new StringEntity("{\"inputFile\":\""+fileUrl+"\",\"documentName\":\""+documentName+"\",\"documentType\":\""+documentType+"\"}");
+				input.setContentType("application/json");
+				postRequest.setEntity(input);
+				HttpResponse httpResponse = httpClient.execute(postRequest);
+				//by right should be 201 for create 
+				if (httpResponse.getStatusLine().getStatusCode() != 200) {
+					throw new RuntimeException("Failed : HTTP error code : "
+						+ httpResponse.getStatusLine().getStatusCode());
+				}
+				br = new BufferedReader(
+                        new InputStreamReader((httpResponse.getEntity().getContent())));
+
+				String output;
+    			StringBuffer sb=new StringBuffer();
+				System.out.println("Output from Server .... \n");
+				while ((output = br.readLine()) != null) {
+//					System.out.println(output);
+					sb.append(output);
+				}				
+    			Gson gson=new Gson();
+    			String jsonStr=gson.toJson(sb.toString());
+        		out=response.getWriter();
+        		System.out.println(jsonStr);
+        		out.println(jsonStr);
+				
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	finally {
+        		httpClient.getConnectionManager().shutdown();
+        		if (out!=null) {
+            	out.flush();
+            	out.close();
+        		}
+        	}
+
+			
+        	return null;
+        }
+        @ResponseBody
         public String listAllDocuments(HttpServletRequest request, HttpServletResponse response) {
         	System.out.println("===== list all doc");
         	response.setContentType("APPLICATION/JSON");
 			PrintWriter out=null;
 			HttpClient httpClient = HttpClientBuilder.create().build();
 			//http://connector.cloudapps-613e.oslab.opentlc.com/
-			HttpGet getRequest=new HttpGet("http://connector.cloudapps-613e.oslab.opentlc.com/document/list/all");
+			String endpoint=request.getServletContext().getInitParameter("REST_ENDPOINT");
+			//HttpGet getRequest=new HttpGet("http://connector.cloudapps-613e.oslab.opentlc.com/document/list/all");
+			String documentId=request.getParameter("documentId");
+			HttpGet getRequest=new HttpGet(endpoint+"list/all");
+			if (documentId!=null) {
+				getRequest=new HttpGet(endpoint+"list/"+documentId);				
+			}
 			getRequest.addHeader("accept", "application/json");
 			BufferedReader br=null;
 			
@@ -154,6 +224,7 @@ public class AppController extends MultiActionController {
         public String uploadFile(HttpServletRequest request, HttpServletResponse response, FileUploadBean file) {
         	System.out.println("===============File "+file);
         	System.out.println("===============File Name "+request.getParameter("fileName"));
+        	System.out.println("===============File Type "+file.getUploadFile().getContentType());
         	String fileName=request.getParameter("fileName");
         	
         	String uploadLocation=request.getServletContext().getInitParameter("UPLOAD_DIR");
@@ -189,7 +260,11 @@ public class AppController extends MultiActionController {
 				e.printStackTrace();
 			}
         	//out.print("{id:a, name:"+fileName+"}");
-        	out.print(fileName +" added to company vault");
+			String output="{\"fileName\":\""+fileName+"\", \"contentType\":\""+file.getUploadFile().getContentType()+"\"}";
+			
+			
+        	//out.print(fileName +" added to company vault");
+			out.print(output);
         	out.flush();
         	out.close();
         	return null;

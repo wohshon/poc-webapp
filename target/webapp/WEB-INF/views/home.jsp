@@ -62,8 +62,7 @@
 			<ul class="list-group">
 			  <li style="cursor: pointer;" class="list-group-item" id="addDocumentItem">Add Document</li>
 			  <li style="cursor: pointer;" class="list-group-item" id="listAllDocumentsItem">List All Documents</li>
-			  <li style="cursor: pointer;" class="list-group-item" id="viewItem">view Files</li>
-			  <li style="cursor: pointer;" class="list-group-item" id="deleteItem">Delete</li>
+			  <li style="cursor: pointer;" class="list-group-item" id="getDocumentItem">Get Document</li>
 			</ul>        	
         </div>
       	<div style="width:50%;margin: 0 auto;display:none" id="addDocumentForm">
@@ -98,17 +97,19 @@
       </div>
       <div id="displayPanel">
 
-      <div style="width:50%;margin: 0 auto;display:none" id="viewFilesForm">
+      <div style="width:50%;margin: 0 auto;display:none" id="getDocumentForm">
 		<form role="form">
 		  <div class="form-group">
-		    <label for="companyId">Company ID:</label>
-		    <input type="text" class="form-control" id="companyId">
+		    <label for="documentId">Document ID:</label>
+		    <input type="text" class="form-control" id="documentId">
 		  </div>
-		  <div class="form-group">
+
+<!-- 		  <div class="form-group">
 		    <label for="companyName">Company Name:</label>
 		    <input type="text" class="form-control" id="companyName">
 		  </div>
-		  <button id="viewBtn" type="button" class="btn btn-default">View File</button>
+ -->
+		  <button id="getDocumentBtn" type="button" class="btn btn-default">Get Document</button>
 		</form>		
       </div>
 	      <div id="displayPanel">
@@ -172,8 +173,8 @@
 		else if (targetId=='listAllDocumentsItem') {
 			$('#listAllDocumentsForm').show();
 		}
-		else if (targetId=='viewItem') {
-			$('#viewFilesForm').show();
+		else if (targetId=='getDocumentItem') {
+			$('#getDocumentForm').show();
 		}
 		//alert('clicked '+targetId);
 		
@@ -187,10 +188,16 @@
 			retrieveCompany();
 		} else if (targetId=='addDocumentBtn') {
 			uploadFile(file);
+			//test -- need to use an actual instance
+			//addDocument('http://sg-demo.cloudapps-613e.oslab.opentlc.com/getFile.page?file=poc.txt', 'poc.txt', 'plain/text');
+			
 		} else if (targetId=='listAllDocumentsBtn') {
 			listAllDocuments(null);
 		}
-		
+		else if (targetId=='getDocumentBtn') {
+			var docId=$('#documentId').val();
+			listAllDocuments(docId);
+		}
 		
 		
   }
@@ -215,6 +222,7 @@
 	  	var formData = new FormData();
 	  	formData.append('uploadFile',file, file.name);
 	  	formData.append('fileName', file.name);
+	  	//alert('fileType '+file.type);
 /* 	  	$.each($('#uploadFile')[0].files, function(i, file) {
 	  		formData.append('file-'+i, file);
 	  	});	  	
@@ -228,15 +236,18 @@
 		    processData: false,		  	
 		  	success : function (data) {
 		  		//alert('success '+data);
-		  		$('#displayPanel').html(data);
-/* 		  		
-				$('#displayPanel').append('<br/>Download url : '+window.location.href+'getFileFromSession.page?file='+file.name);
-		  		$('#displayPanel').append('<br/><a href="'+window.location.href+'getFileFromSession.page?file='+file.name+'">Download file</a>');
- */		  		
-					$('#displayPanel').append('<br/>Download url : '+window.location.href+'getFile.page?file='+file.name);
-					$('#displayPanel').append('<br/><a href="'+window.location.href+'getFile.page?file='+file.name+'">Download file</a>');
-					$('#chosenFile').html('');
-					//call rest api
+		  		//success, call companyvault now
+				var output=JSON.parse(data);
+				$('#chosenFile').html('');		
+/* 		  		$('#displayPanel').html(data);
+				$('#displayPanel').append('<br/>Download url : '+window.location.href+'getFile.page?file='+file.name);
+				$('#displayPanel').append('<br/><a href="'+window.location.href+'getFile.page?file='+file.name+'">Download file</a>');
+				$('#chosenFile').html('');
+ */				//call rest api
+ 				var fileUrl='http://sg-demo.cloudapps-613e.oslab.opentlc.com/getFile.page?file='+output.fileName;
+				$('#displayPanel').html('Adding document...');			  	
+				
+				addDocument(fileUrl, output.fileName, output.contentType);
 		  		
 			  	},
 			 error : function (data) {
@@ -247,6 +258,64 @@
 	  	});
 		
 	}
+
+	function addDocument(fileUrl, fileName, fileType) {
+		//alert(fileUrl+' '+fileName+' '+fileType);
+		var endpoint="addDocument.page";
+		var data={inputFile:fileUrl,documentName:fileName,documentType:fileType};
+		$.ajax({
+		  	url:endpoint,
+		  	type:"POST",
+		  	data:data,
+		  	dataType: 'json',
+		  	success : function (data) {
+			  	//alert('add success '+data);
+			  	var output=JSON.parse(data);
+			  	//alert(Object.keys(output));
+			  	
+			  	$('#displayPanel').html('Added Document :'+output.ETag);
+		  	},
+		  	error : function (data) {
+		  		alert('error '+data.status);
+			}	
+		});	 
+
+	}  
+  
+
+  function listAllDocuments(key) {
+		var endpoint='listAllDocuments.page';
+		$('#displayPanel').html('Retrieving records...');
+		var data='';
+		var mode='ALL';
+		if (key!=null) {
+			mode='SINGLE';
+			data={documentId:key}
+			}			  	
+		$.ajax({
+		  	url:endpoint,
+		  	type:"GET",
+		  	data:data,
+		  	dataType: 'json',
+		  	success : function (data) {
+			  	//alert('success ');
+			  	var payload=JSON.parse(data);
+				//alert(Object.keys(payload));
+				if (mode=='ALL') {
+					$('#displayPanel').html(payload.Contents.length + ' records retrieved');
+				} else {
+						//$('#displayPanel').html(payload.Body.data);
+						var byteArray = new Uint8Array(payload.Body.data);
+						var url=window.URL.createObjectURL(new Blob([byteArray], { type: payload.ContentType }));
+						$('#displayPanel').html('<a href="'+url+'" download="'+key+'" >download file</a>');
+					}				  	
+
+		  	},
+		  	error : function (data) {
+		  		alert('error '+data.status);
+			}	
+		});	 
+  }
 
   function listAllDocuments_XX(key) {
 		var endpoint='http://192.168.223.198:9000/document/list'+key;
@@ -272,28 +341,7 @@
 			}	
 		});	 
 }
-
-  function listAllDocuments(key) {
-		var endpoint='listAllDocuments.page';
-		$.ajax({
-		  	url:endpoint,
-		  	type:"GET",
-		  	data:'',
-		  	dataType: 'json',
-		  	success : function (data) {
-			  	//alert('success ');
-			  	var payload=JSON.parse(data);
-				//alert(Object.keys(payload));
-				$('#displayPanel').append(payload.Contents.length + ' records retrieved');			  	
-			  	//alert('success '+data.companyId);
-		  	},
-		  	error : function (data) {
-		  		alert('error '+data.status);
-		  		alert('error '+Object.keys(data));
-		  		alert('error '+Object.keys(data.statusText));
-			}	
-		});	 
-  }
+  
   $( document ).ready( readyFn );
   </script>
   </body>

@@ -3,6 +3,7 @@ package com.demo.sgcustom.web;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.google.gson.Gson;
@@ -18,9 +21,54 @@ public class RestUtil {
 	
 	public static void main(String[] args) {
 		RestUtil ru=new RestUtil();
-		ru.rest();
+		//ru.rest();
+		ru.post();
 	}
 	
+	public void post() {
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		//http://54.169.32.213/document/add
+		HttpPost postRequest=new HttpPost("http://192.168.223.198:9000/document/add");
+		//HttpPost postRequest=new HttpPost("http://54.169.32.213/document/add");
+		try {
+			//StringEntity input =new StringEntity("{\"inputFile\":\"http://sg-demo.cloudapps-613e.oslab.opentlc.com/getFile.page?file=sample.json\",\"documentName\":\"sample.json\",\"documentType\":\"application/octet-stream\"}");
+			//StringEntity input =new StringEntity("{\"inputFile\":\"http://sg-demo.cloudapps-613e.oslab.opentlc.com/getFile.page?file=poc.txt\",\"documentName\":\"poc.txt\",\"documentType\":\"plain/text\"}");
+			StringEntity input =new StringEntity("{\"inputFile\":\"http://192.168.223.198:8080/getFile.page?file=poc.txt\",\"documentName\":\"poc.txt\",\"documentType\":\"plain/text\"}");
+			input.setContentType("application/json");
+			postRequest.setEntity(input);
+
+			HttpResponse response = httpClient.execute(postRequest);
+
+			if (response.getStatusLine().getStatusCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ response.getStatusLine().getStatusCode());
+			}
+
+			BufferedReader br = new BufferedReader(
+	                        new InputStreamReader((response.getEntity().getContent())));
+
+			String output;
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				System.out.println(output);
+			}			
+		
+			System.out.println((response.getEntity().getContentLength()));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		finally {
+			httpClient.getConnectionManager().shutdown();
+
+		}
+	}
 	public void rest() {
 		
 		HttpClient httpClient = HttpClientBuilder.create().build();
