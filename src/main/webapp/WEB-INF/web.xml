@@ -11,7 +11,13 @@
   </context-param>
 <context-param>
     	<param-name>UPLOAD_DIR</param-name>
-    	<param-value>/home/virtuser/uploads/</param-value>
+    	<param-value>/tmp/</param-value>
+    	<!-- param-value>/home/virtuser/uploads/</param-value-->
+</context-param>  
+<context-param>
+    	<param-name>COMPANY_ENDPOINT</param-name>
+    	<param-value>/tmp/</param-value>
+    	<!-- param-value>/home/virtuser/uploads/</param-value-->
 </context-param>  
   <listener>
     <listener-class>

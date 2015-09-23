@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>SG Custom Demo</title>
+    <title>SG Customs Demo</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -40,11 +40,11 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Singapore Custom Demo</a>
+          <a class="navbar-brand" href="#">Singapore Customs Demo</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
+            <li class="active"><a href="./">Home</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>
@@ -61,7 +61,7 @@
         <div style="width:40%;margin: 0 auto;" id="optionsPanel">
 			<ul class="list-group">
 			  <li style="cursor: pointer;" class="list-group-item" id="addDocumentItem">Add Document</li>
-			  <li style="cursor: pointer;" class="list-group-item" id="retrieveItem">Retrieve</li>
+			  <li style="cursor: pointer;" class="list-group-item" id="listAllDocumentsItem">List All Documents</li>
 			  <li style="cursor: pointer;" class="list-group-item" id="viewItem">view Files</li>
 			  <li style="cursor: pointer;" class="list-group-item" id="deleteItem">Delete</li>
 			</ul>        	
@@ -82,9 +82,9 @@
  			</form>		
       	</div>
 
-      <div style="width:50%;margin: 0 auto;display:none" id="retrieveForm">
+      <div style="width:50%;margin: 0 auto;display:none" id="listAllDocumentsForm">
 		<form role="form">
-		  <div class="form-group">
+<!-- 		  <div class="form-group">
 		    <label for="companyId">Company ID:</label>
 		    <input type="text" class="form-control" id="companyId">
 		  </div>
@@ -92,7 +92,8 @@
 		    <label for="companyName">Company Name:</label>
 		    <input type="text" class="form-control" id="companyName">
 		  </div>
-		  <button id="retrieveBtn" type="button" class="btn btn-default">Retrieve</button>
+ -->
+ 	  <button id="listAllDocumentsBtn" type="button" class="btn btn-default">Get All Documents</button>
 		</form>		
       </div>
       <div id="displayPanel">
@@ -168,8 +169,8 @@
 		if (targetId=='addDocumentItem') {
 			$('#addDocumentForm').show();
 		} 
-		else if (targetId=='retrieveItem') {
-			$('#retrieveForm').show();
+		else if (targetId=='listAllDocumentsItem') {
+			$('#listAllDocumentsForm').show();
 		}
 		else if (targetId=='viewItem') {
 			$('#viewFilesForm').show();
@@ -186,6 +187,8 @@
 			retrieveCompany();
 		} else if (targetId=='addDocumentBtn') {
 			uploadFile(file);
+		} else if (targetId=='listAllDocumentsBtn') {
+			listAllDocuments(null);
 		}
 		
 		
@@ -226,9 +229,14 @@
 		  	success : function (data) {
 		  		//alert('success '+data);
 		  		$('#displayPanel').html(data);
-		  		$('#displayPanel').append('<br/>Download url : '+window.location.href+'getFileFromSession.page?file='+file.name);
+/* 		  		
+				$('#displayPanel').append('<br/>Download url : '+window.location.href+'getFileFromSession.page?file='+file.name);
 		  		$('#displayPanel').append('<br/><a href="'+window.location.href+'getFileFromSession.page?file='+file.name+'">Download file</a>');
-		  		$('#chosenFile').html('');
+ */		  		
+					$('#displayPanel').append('<br/>Download url : '+window.location.href+'getFile.page?file='+file.name);
+					$('#displayPanel').append('<br/><a href="'+window.location.href+'getFile.page?file='+file.name+'">Download file</a>');
+					$('#chosenFile').html('');
+					//call rest api
 		  		
 			  	},
 			 error : function (data) {
@@ -240,6 +248,52 @@
 		
 	}
 
+  function listAllDocuments_XX(key) {
+		var endpoint='http://192.168.223.198:9000/document/list'+key;
+	  if (key==null || key=='') {
+		  //endpoint='http://192.168.223.198:9000/document/list/all';
+		  endpoint='http://54.169.32.213/document/list/all';
+		  //endpoint="http://192.168.223.198:8080/companyvault/backend/getCompanyVault/1/2";
+		  //endpoint="http://192.168.223.198:9080/companyvault/getCompanyVault/1/2";
+		}
+		$.ajax({
+		  	url:endpoint,
+		  	type:"GET",
+		  	data:'',
+		  	dataType: 'json',
+		  	success : function (data) {
+			  	alert('success '+data);
+			  	//alert('success '+data.companyId);
+		  	},
+		  	error : function (data) {
+		  		alert('error '+data.status);
+		  		alert('error '+Object.keys(data));
+		  		alert('error '+Object.keys(data.statusText));
+			}	
+		});	 
+}
+
+  function listAllDocuments(key) {
+		var endpoint='listAllDocuments.page';
+		$.ajax({
+		  	url:endpoint,
+		  	type:"GET",
+		  	data:'',
+		  	dataType: 'json',
+		  	success : function (data) {
+			  	//alert('success ');
+			  	var payload=JSON.parse(data);
+				//alert(Object.keys(payload));
+				$('#displayPanel').append(payload.Contents.length + ' records retrieved');			  	
+			  	//alert('success '+data.companyId);
+		  	},
+		  	error : function (data) {
+		  		alert('error '+data.status);
+		  		alert('error '+Object.keys(data));
+		  		alert('error '+Object.keys(data.statusText));
+			}	
+		});	 
+  }
   $( document ).ready( readyFn );
   </script>
   </body>
