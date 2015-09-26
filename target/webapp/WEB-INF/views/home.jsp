@@ -92,10 +92,10 @@
 		    <input type="text" class="form-control" id="companyName">
 		  </div>
  -->
- 	  <button id="listAllDocumentsBtn" type="button" class="btn btn-default">Get All Documents</button>
+ 	  	<button id="listAllDocumentsBtn" type="button" class="btn btn-default">Get All Documents</button>
 		</form>		
       </div>
-      <div id="displayPanel">
+      
 
       <div style="width:50%;margin: 0 auto;display:none" id="getDocumentForm">
 		<form role="form">
@@ -103,24 +103,17 @@
 		    <label for="documentId">Document ID:</label>
 		    <input type="text" class="form-control" id="documentId">
 		  </div>
-
-<!-- 		  <div class="form-group">
-		    <label for="companyName">Company Name:</label>
-		    <input type="text" class="form-control" id="companyName">
-		  </div>
- -->
 		  <button id="getDocumentBtn" type="button" class="btn btn-default">Get Document</button>
 		</form>		
       </div>
-	      <div id="displayPanel">
-	
-	      
-	      </div>
+
+      <div id="displayPanel">
       </div>
-	<!-- 
-	https://spring.io/guides/gs/consuming-rest-jquery/
-	 -->
-	</div>
+      <div id="displayDocumentsPanel">
+      </div>
+      </div><!-- template -->
+
+
     </div><!-- /.container -->
 
 
@@ -303,6 +296,13 @@
 				//alert(Object.keys(payload));
 				if (mode=='ALL') {
 					$('#displayPanel').html(payload.Contents.length + ' records retrieved');
+					var table='<table class="table table-striped">';
+					table+='<thead><th>#</th><th>Document Key</th><th>ETag</th><th>Size</th></thead><tbody>';
+					for (var i=0;i<payload.Contents.length;i++) {
+						table+='<tr><th scope="row">'+(i+1)+'</th><td>'+payload.Contents[i].Key+'</td><td>'+payload.Contents[i].ETag+'</td><td>'+payload.Contents[i].Size+'</td></tr>';
+					}
+					table+='</tbody></table>'
+					$('#displayDocumentsPanel').html(table);
 				} else {
 						//$('#displayPanel').html(payload.Body.data);
 						var byteArray = new Uint8Array(payload.Body.data);

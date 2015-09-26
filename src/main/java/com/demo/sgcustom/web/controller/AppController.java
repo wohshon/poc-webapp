@@ -232,8 +232,8 @@ public class AppController extends MultiActionController {
             BufferedOutputStream stream;
             try {
             	//TEST to save in session // does not work for session, 3rd party cannot access
-            	request.getSession().setAttribute("UPLOADED_FILE_"+fileName, file.getUploadFile().getBytes());
-            	request.getSession().setAttribute("FILE_NAME", fileName);
+            	//request.getSession().setAttribute("UPLOADED_FILE_"+fileName, file.getUploadFile().getBytes());
+            	//request.getSession().setAttribute("FILE_NAME", fileName);
             	request.getServletContext().setAttribute("UPLOADED_FILE_"+fileName, file.getUploadFile().getBytes());
             	request.getServletContext().setAttribute("FILE_NAME", fileName);
 				System.out.println("===============upload file "+file.getUploadFile());
