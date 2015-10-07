@@ -237,8 +237,9 @@
 				$('#displayPanel').append('<br/><a href="'+window.location.href+'getFile.page?file='+file.name+'">Download file</a>');
 				$('#chosenFile').html('');
  */				//call rest api
- 				var fileUrl='http://sg-demo.cloudapps-613e.oslab.opentlc.com/getFile.page?file='+output.fileName;
-				$('#displayPanel').html('Adding document...');			  	
+ 				//var fileUrl='http://sg-demo.cloudapps-6545.oslab.opentlc.com/getFile.page?file='+output.fileName;
+ 				var fileUrl=window.location.href+'getFile.page?file='+output.fileName;
+ 				$('#displayPanel').html('Adding document...');			  	
 				
 				addDocument(fileUrl, output.fileName, output.contentType);
 		  		
